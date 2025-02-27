@@ -13,7 +13,7 @@
                                 <p class="text-muted">Buat akun dan mulai membuat tugas baru</p>
                             </div>
 
-                            <form method="POST" action="register">
+                            <form method="POST" action="{{ route('create.user') }}">
                                 @csrf
 
                                 <div class="mb-3">
@@ -101,7 +101,7 @@
                                 </button>
 
                                 <div class="text-center">
-                                    <a href="login" class="link-purple">
+                                    <a href="{{ route('login') }}" class="link-purple">
                                         Sudah Punya Akun? Silahkan Login
                                     </a>
                                 </div>
