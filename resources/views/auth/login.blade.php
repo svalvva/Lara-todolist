@@ -12,7 +12,7 @@
                                 <p class="text-muted">Mulai membuat tugas tugas anda! dengan masuk</p>
                             </div>
 
-                            <form method="POST" action="login">
+                            <form method="POST" action="{{ route('login.form') }}">
                                 @csrf
 
                                 <div class="mb-3">
@@ -56,7 +56,7 @@
                                 </button>
 
                                 <div class="text-center">
-                                    <a href="register" class="link-purple">
+                                    <a href="{{ url('/registration')}}" class="link-purple">
                                         Tidak Punya Akun? Buat Akun
                                     </a>
                                 </div>
