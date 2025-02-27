@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 // Import kelas-kelas yang diperlukan
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -49,6 +50,18 @@ class AuthController extends Controller
             'password.confirmed' => 'Konfirmasi password tidak cocok'
         ]);
 
+        // Cek apakah role admin sudah ada
+        $adminRole = Role::where('nama', 'admin')->first();
+        
+        // Jika belum ada, buat role admin dan user
+        if (!$adminRole) {
+            $adminRole = Role::create(['nama' => 'admin']);
+            Role::create(['nama' => 'user']);
+        }
+
+        // Set role admin untuk user baru
+        $validatedData['id_role'] = $adminRole->id;
+        
         // Hash password sebelum disimpan ke database
         $validatedData['password'] = Hash::make($validatedData['password']);
 
@@ -75,29 +88,44 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         // Validasi input login
-        $validatedData = $request->validate([
-            'email' => 'required|email', // Email wajib diisi dan format harus valid
-            'password' => 'required'     // Password wajib diisi
+        $credentials = $request->validate([
+            'login' => 'required|string', // Bisa email atau username
+            'password' => 'required|string'
         ], [
-            // Pesan error kustom
-            'email.required' => 'Email harus diisi',
-            'email.email' => 'Format email tidak valid',
+            'login.required' => 'Email atau username harus diisi',
             'password.required' => 'Password harus diisi'
         ]);
 
+        // Cek apakah input adalah email atau username
+        $loginType = filter_var($credentials['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+
+        // Susun credentials untuk authentication
+        $authCredentials = [
+            $loginType => $credentials['login'],
+            'password' => $credentials['password']
+        ];
+
         // Coba melakukan autentikasi
-        if (Auth::attempt($validatedData)) {
-            // Jika berhasil, regenerate session untuk keamanan
+        if (Auth::attempt($authCredentials)) {
             $request->session()->regenerate();
             
-            // Redirect ke halaman yang dituju sebelumnya atau ke dashboard
-            return redirect()->intended('dashboard')->with('success', 'Login berhasil!');
+            // Dapatkan user yang sedang login
+            $user = Auth::user();
+            
+            // Redirect berdasarkan role
+            if ($user->role->nama === 'admin') {
+                return redirect()->intended('admin/dashboard')->with('success', 'Selamat datang Admin!');
+            } else {
+                return redirect()->intended('dashboard')->with('success', 'Login berhasil!');
+            }
         }
 
         // Jika gagal, kembali ke halaman login dengan pesan error
-        return back()->withErrors([
-            'email' => 'Email atau password salah'
-        ])->withInput($request->only('email'));
+        return back()
+            ->withInput($request->only('login'))
+            ->withErrors([
+                'login' => 'Email/Username atau password salah'
+            ]);
     }
 
     /**

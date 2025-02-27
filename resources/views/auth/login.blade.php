@@ -16,8 +16,8 @@
                             @endif
 
                             <div class="text-center mb-4">
-                                <h2 class="fw-bold todo mb-4">To-Do-List</h2>
-                                <p class="text-muted">Mulai membuat tugas tugas anda! dengan masuk</p>
+                                <h2 class="todo fw-bold mb-4">To-Do-List</h2>
+                                <p class="text-muted">Masuk ke akun Anda</p>
                             </div>
 
                             <form method="POST" action="{{ route('login') }}">
@@ -26,14 +26,14 @@
                                 <div class="mb-3">
                                     <div class="input-group">
                                         <span class="input-group-text bg-light border-end-0">
-                                            <i class="bi bi-envelope-at"></i>
+                                            <i class="bi bi-person"></i>
                                         </span>
-                                        <input type="email" name="email"
-                                            class="form-control border-start-0 @error('email') is-invalid @enderror"
-                                            placeholder="Email Address" value="{{ old('email') }}" required
-                                            autocomplete="email" autofocus>
+                                        <input type="text" name="login"
+                                            class="form-control border-start-0 @error('login') is-invalid @enderror"
+                                            placeholder="Email atau Username" value="{{ old('login') }}" required
+                                            autofocus>
                                     </div>
-                                    @error('email')
+                                    @error('login')
                                         <div class="invalid-feedback d-block">
                                             {{ $message }}
                                         </div>
@@ -47,7 +47,7 @@
                                         </span>
                                         <input type="password" name="password"
                                             class="form-control border-start-0 @error('password') is-invalid @enderror"
-                                            placeholder="Password" required autocomplete="current-password">
+                                            placeholder="Password" required>
                                     </div>
                                     @error('password')
                                         <div class="invalid-feedback d-block">
@@ -64,8 +64,8 @@
                                 </button>
 
                                 <div class="text-center">
-                                    <a href="register" class="link-purple">
-                                        Tidak Punya Akun? Buat Akun
+                                    <a href="{{ route('register') }}" class="link-purple">
+                                        Belum Punya Akun? Daftar Sekarang
                                     </a>
                                 </div>
 

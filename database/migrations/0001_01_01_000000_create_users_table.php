@@ -14,6 +14,7 @@ return new class extends Migration
         // Membuat tabel users
         Schema::create('users', function (Blueprint $table) {
             $table->id();                     // Primary key auto-increment
+            $table->foreignId('id_role');                     // Primary key auto-increment
             $table->string('nama');           // Kolom untuk nama lengkap
             $table->string('username');       // Kolom untuk username
             $table->string('email')->unique(); // Email harus unik
