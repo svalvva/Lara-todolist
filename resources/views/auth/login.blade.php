@@ -7,12 +7,20 @@
                 <div class="col-12 col-md-6 col-lg-5">
                     <div class="card auth-card shadow-sm">
                         <div class="card-body p-4 p-md-5">
+                            <!-- Alert Message -->
+                            @if(session('success'))
+                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                    {{ session('success') }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            @endif
+
                             <div class="text-center mb-4">
                                 <h2 class="fw-bold todo mb-4">To-Do-List</h2>
                                 <p class="text-muted">Mulai membuat tugas tugas anda! dengan masuk</p>
                             </div>
 
-                            <form method="POST" action="login">
+                            <form method="POST" action="{{ route('login') }}">
                                 @csrf
 
                                 <div class="mb-3">

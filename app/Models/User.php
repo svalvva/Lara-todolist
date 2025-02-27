@@ -13,20 +13,19 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
+     * Daftar kolom yang bisa diisi secara massal (mass assignment)
+     * Ini adalah security feature Laravel untuk mencegah field yang tidak diinginkan diisi
      */
     protected $fillable = [
-        'name',
+        'nama',
+        'username',
         'email',
         'password',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
+     * Daftar atribut yang harus disembunyikan saat model dikonversi ke array/JSON
+     * Melindungi data sensitif seperti password
      */
     protected $hidden = [
         'password',
@@ -34,9 +33,8 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Daftar atribut yang harus di-cast ke tipe data tertentu
+     * Mengkonversi kolom database ke tipe data yang sesuai
      */
     protected function casts(): array
     {
