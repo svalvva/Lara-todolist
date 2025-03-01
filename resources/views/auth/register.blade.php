@@ -13,7 +13,7 @@
                                 <p class="text-muted">Buat akun dan mulai membuat tugas baru</p>
                             </div>
 
-                            <form method="POST" action="register">
+                            <form method="POST" action="{{ route('create.user') }}">
                                 @csrf
 
                                 <div class="mb-3">
@@ -21,12 +21,28 @@
                                         <span class="input-group-text bg-light border-end-0">
                                             <i class="bi bi-person"></i>
                                         </span>
-                                        <input type="text" name="name"
-                                            class="form-control border-start-0 @error('name') is-invalid @enderror"
-                                            placeholder="Full Name" value="{{ old('name') }}" required autocomplete="name"
+                                        <input type="text" name="nama"
+                                            class="form-control border-start-0 @error('nama') is-invalid @enderror"
+                                            placeholder="Nama Lengkap" value="{{ old('nama') }}" required autocomplete="nama"
                                             autofocus>
                                     </div>
-                                    @error('name')
+                                    @error('nama')
+                                        <div class="invalid-feedback d-block">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="bi bi-person-badge"></i>
+                                        </span>
+                                        <input type="text" name="username"
+                                            class="form-control border-start-0 @error('username') is-invalid @enderror"
+                                            placeholder="Username" value="{{ old('username') }}" required autocomplete="username">
+                                    </div>
+                                    @error('username')
                                         <div class="invalid-feedback d-block">
                                             {{ $message }}
                                         </div>
@@ -85,7 +101,7 @@
                                 </button>
 
                                 <div class="text-center">
-                                    <a href="login" class="link-purple">
+                                    <a href="{{ route('login') }}" class="link-purple">
                                         Sudah Punya Akun? Silahkan Login
                                     </a>
                                 </div>
