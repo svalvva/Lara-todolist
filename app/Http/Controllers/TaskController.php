@@ -9,6 +9,17 @@ use Illuminate\Support\Facades\Validator;
 
 class TaskController extends Controller
 {
+    public function index()
+    {
+        // Mendapatkan user yang sedang login
+        $user = Auth::user();
+
+        // Menghitung jumlah tugas milik user
+        $tasksCount = Task::where('id_user', $user->id)->count();
+
+        // Mengembalikan view dashboard dengan data jumlah tugas
+        return view('user.dashboard', compact('tasksCount'));
+    }
     public function getAllTask()
     {
         $user = Auth::user();

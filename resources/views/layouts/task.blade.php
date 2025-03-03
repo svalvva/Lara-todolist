@@ -176,21 +176,15 @@
             </div>
             <ul class="nav flex-column mt-4">
                 <li class="nav-item">
+                    <a href="{{ route('dashboard.index') }}" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{{ route('tasks.index') }}" class="nav-link">
                         <i class="fas fa-list"></i>
                         <span>Semua Tugas</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-clock"></i>
-                        <span>Tertunda</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Selesai</span>
                     </a>
                 </li>
             </ul>
