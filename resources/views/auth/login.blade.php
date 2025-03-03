@@ -69,7 +69,7 @@
 
                                     <a href="{{ route('register') }}" class="link-purple">
                                         Belum Punya Akun? Daftar Sekarang
-
+                                    </a>
                                 </div>
 
                                 <div class="mt-4 pt-4 border-top">
