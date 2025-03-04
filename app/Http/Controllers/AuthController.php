@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
+// Controller untuk menangani autentikasi user
 class AuthController extends Controller
 {
     /**
@@ -111,7 +112,7 @@ class AuthController extends Controller
             
             // Redirect langsung berdasarkan role
             return Auth::user()->role->nama === 'admin'
-                ? redirect()->route('admin.dashboard')->with('success', 'Selamat datang Admin!')
+                ? redirect()->route('dashboard')->with('success', 'Selamat datang Admin!')
                 : redirect()->route('tasks.index')->with('success', 'Login berhasil!');
         }
 

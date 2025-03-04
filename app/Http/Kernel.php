@@ -9,6 +9,7 @@ class Kernel extends HttpKernel
     protected $middlewareGroups = [
         'web' => [
             // ...existing middleware...
+            \App\Http\Middleware\CheckRole::class,
         ],
 
         'api' => [

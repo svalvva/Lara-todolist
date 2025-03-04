@@ -6,25 +6,33 @@ use App\Models\Task;
 use App\Http\Requests\TaskRequest;
 use Illuminate\Http\Request;
 
+// Controller untuk mengelola operasi CRUD pada Task
 class TaskController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Menampilkan daftar tugas dengan filter dan pencarian
     public function index(Request $request)
     {
-        $tasks = Task::search([
-            'search' => $request->search,
-            'status' => $request->status
-        ])
-        ->where('id_user', auth()->id())
-        ->orderBy('created_at', 'desc')
-        ->get();
-
+        // Query dasar untuk tasks milik user yang login
+        $query = Task::where('id_user', auth()->id());
+        
+        // Menerapkan filter pencarian jika ada
+        if ($request->search) {
+            $query->where('judul', 'like', '%' . $request->search . '%');
+        }
+        
+        // Menerapkan filter status jika ada
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+        
+        // Mengambil data tugas dan mengurutkannya
+        $tasks = $query->orderBy('created_at', 'desc')->get();
+        
+        // Menghitung jumlah tugas per status
         $counters = [
-            'all' => Task::where('id_user', auth()->id())->count(),
-            'tertunda' => Task::where('id_user', auth()->id())->where('status', 'tertunda')->count(),
-            'selesai' => Task::where('id_user', auth()->id())->where('status', 'selesai')->count()
+            'all' => $tasks->count(),
+            'tertunda' => $tasks->where('status', 'tertunda')->count(),
+            'selesai' => $tasks->where('status', 'selesai')->count()
         ];
         
         return view('user.tasks', compact('tasks', 'counters'));
@@ -144,7 +152,7 @@ class TaskController extends Controller
      */
     public function toggleStatus($id)
     {
-        $task = Task::findOrFail($id);
+        $task = Task::where('id_user', auth()->id())->findOrFail($id);
         $task->status = $task->status === 'selesai' ? 'tertunda' : 'selesai';
         $task->save();
         

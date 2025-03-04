@@ -33,10 +33,16 @@
                 </div>
             </form>
         </div>
-        <div class="col-md-3 text-md-end">
-            <button class="btn btn-primary shadow-sm w-100" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+        <div class="col-md-3 text-md-end d-flex gap-2">
+            <button class="btn btn-primary shadow-sm flex-grow-1" data-bs-toggle="modal" data-bs-target="#addTaskModal">
                 <i class="fas fa-plus-circle me-1"></i> Tambah Tugas
             </button>
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="btn btn-outline-danger shadow-sm">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </form>
         </div>
     </div>
 
@@ -145,27 +151,48 @@
                 <h5 class="modal-title">Tambah Tugas Baru</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form id="addTaskForm" action="{{ route('tasks.store') }}" method="POST">
+            <form id="addTaskForm" action="{{ route('tasks.store') }}" method="POST" class="needs-validation" novalidate>
                 @csrf
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Judul Tugas</label>
-                        <input type="text" class="form-control" name="judul" required>
+                        <label class="form-label">Judul Tugas<span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="judul" required 
+                               oninvalid="this.setCustomValidity('Judul tugas harus diisi')"
+                               oninput="this.setCustomValidity('')">
+                        <div class="invalid-feedback">
+                            Judul tugas harus diisi
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Deskripsi</label>
-                        <textarea class="form-control" name="deskripsi" rows="3"></textarea>
+                        <label class="form-label">Deskripsi<span class="text-danger">*</span></label>
+                        <textarea class="form-control" name="deskripsi" rows="3" required
+                                  oninvalid="this.setCustomValidity('Deskripsi tugas harus diisi')"
+                                  oninput="this.setCustomValidity('')"></textarea>
+                        <div class="invalid-feedback">
+                            Deskripsi tugas harus diisi
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Tenggat Waktu</label>
-                        <input type="date" class="form-control" name="deadline">
+                        <label class="form-label">Tenggat Waktu<span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" name="deadline" required
+                               oninvalid="this.setCustomValidity('Tenggat waktu harus diisi')"
+                               oninput="this.setCustomValidity('')">
+                        <div class="invalid-feedback">
+                            Tenggat waktu harus diisi
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <select class="form-select" name="status">
-                            <option value="tertunda" selected>Tertunda</option>
+                        <label class="form-label">Status<span class="text-danger">*</span></label>
+                        <select class="form-select" name="status" required
+                                oninvalid="this.setCustomValidity('Status harus dipilih')"
+                                oninput="this.setCustomValidity('')">
+                            <option value="">Pilih status</option>
+                            <option value="tertunda">Tertunda</option>
                             <option value="selesai">Selesai</option>
                         </select>
+                        <div class="invalid-feedback">
+                            Status harus dipilih
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -289,83 +316,102 @@
 
 @push('scripts')
 <script>
-    // Menambahkan fungsi pencarian
-    document.getElementById('searchTask').addEventListener('keyup', function(e) {
-        const searchText = e.target.value.toLowerCase();
+// Add this at the beginning of your scripts section
+(() => {
+    'use strict'
+
+    // Fetch all forms we want to apply validation to
+    const forms = document.querySelectorAll('.needs-validation')
+
+    // Loop over them and prevent submission
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+
+// Menambahkan fungsi pencarian
+document.getElementById('searchTask').addEventListener('keyup', function(e) {
+    const searchText = e.target.value.toLowerCase();
+    const tasks = document.querySelectorAll('.list-group-item');
+    
+    tasks.forEach(task => {
+        const title = task.querySelector('h6').textContent.toLowerCase();
+        task.style.display = title.includes(searchText) ? '' : 'none';
+    });
+});
+
+// Menambahkan fungsi filter
+document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const filter = this.dataset.filter;
         const tasks = document.querySelectorAll('.list-group-item');
         
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+        
         tasks.forEach(task => {
-            const title = task.querySelector('h6').textContent.toLowerCase();
-            task.style.display = title.includes(searchText) ? '' : 'none';
+            const isCompleted = task.querySelector('.form-check-input').checked;
+            if (filter === 'all') {
+                task.style.display = '';
+            } else if (filter === 'active' && !isCompleted) {
+                task.style.display = '';
+            } else if (filter === 'completed' && isCompleted) {
+                task.style.display = '';
+            } else {
+                task.style.display = 'none';
+            }
         });
     });
+});
 
-    // Menambahkan fungsi filter
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const filter = this.dataset.filter;
-            const tasks = document.querySelectorAll('.list-group-item');
+function editTask(id) {
+    fetch(`/tasks/edit/${id}`)
+        .then(response => response.json())
+        .then(task => {
+            document.getElementById('edit_judul').value = task.judul;
+            document.getElementById('edit_deskripsi').value = task.deskripsi;
+            document.getElementById('edit_deadline').value = task.deadline.split(' ')[0];
+            document.getElementById('edit_status').value = task.status;
             
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            this.classList.add('active');
+            const editForm = document.getElementById('editTaskForm');
+            editForm.action = `/tasks/${id}`;
             
-            tasks.forEach(task => {
-                const isCompleted = task.querySelector('.form-check-input').checked;
-                if (filter === 'all') {
-                    task.style.display = '';
-                } else if (filter === 'active' && !isCompleted) {
-                    task.style.display = '';
-                } else if (filter === 'completed' && isCompleted) {
-                    task.style.display = '';
-                } else {
-                    task.style.display = 'none';
-                }
-            });
+            new bootstrap.Modal(document.getElementById('editTaskModal')).show();
+        })
+        .catch(error => {
+            alert('Terjadi kesalahan saat mengambil data tugas');
+            console.error('Error:', error);
         });
-    });
+}
 
-    function editTask(id) {
-        fetch(`/tasks/edit/${id}`)
-            .then(response => response.json())
-            .then(task => {
-                document.getElementById('edit_judul').value = task.judul;
-                document.getElementById('edit_deskripsi').value = task.deskripsi;
-                document.getElementById('edit_deadline').value = task.deadline.split(' ')[0];
-                document.getElementById('edit_status').value = task.status;
-                
-                const editForm = document.getElementById('editTaskForm');
-                editForm.action = `/tasks/${id}`;
-                
-                new bootstrap.Modal(document.getElementById('editTaskModal')).show();
-            })
-            .catch(error => {
-                alert('Terjadi kesalahan saat mengambil data tugas');
-                console.error('Error:', error);
-            });
+function deleteTask(id) {
+    if (confirm('Apakah Anda yakin ingin menghapus tugas ini?')) {
+        fetch(`/tasks/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            window.location.reload();
+        })
+        .catch(error => {
+            alert('Terjadi kesalahan saat menghapus tugas');
+            console.error('Error:', error);
+        });
     }
-
-    function deleteTask(id) {
-        if (confirm('Apakah Anda yakin ingin menghapus tugas ini?')) {
-            fetch(`/tasks/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                window.location.reload();
-            })
-            .catch(error => {
-                alert('Terjadi kesalahan saat menghapus tugas');
-                console.error('Error:', error);
-            });
-        }
-    }
+}
 </script>
 @endpush
 

@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\KelolaUserController;
 
 // Public routes
 
@@ -16,6 +18,13 @@ use App\Http\Controllers\AuthController;
 // Protected routes
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    
+    // Dashboard routes
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+        // Kelola User routes
+        Route::resource('users', KelolaUserController::class);
+    });
     
     // Admin routes
     Route::prefix('admin')->group(function () {
