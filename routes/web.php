@@ -5,6 +5,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KelolaUserController;
+use App\Http\Middleware\CheckRole;
 
 // Public routes
 
@@ -21,7 +22,7 @@ Route::middleware('auth')->group(function () {
     
     // Dashboard routes
     Route::prefix('dashboard')->group(function () {
-        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/', [DashboardController::class, 'index'])->name('dashboard')->middleware(CheckRole::class);
         // Kelola User routes
         Route::resource('users', KelolaUserController::class);
     });
@@ -29,7 +30,7 @@ Route::middleware('auth')->group(function () {
     
     // User routes - Tasks CRUD
     Route::prefix('tasks')->group(function () {
-        Route::get('/', [TaskController::class, 'index'])->name('tasks.index');
+        Route::get('/', [TaskController::class, 'index'])->name('tasks.index')->middleware(CheckRole::class);
         Route::post('/store', [TaskController::class, 'store'])->name('tasks.store');
         Route::get('/{task}', [TaskController::class, 'show'])->name('tasks.show');
         Route::put('/{task}', [TaskController::class, 'update'])->name('tasks.update');
