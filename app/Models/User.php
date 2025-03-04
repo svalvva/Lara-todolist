@@ -7,21 +7,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+// Model User untuk merepresentasikan pengguna sistem
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * Daftar kolom yang bisa diisi secara massal (mass assignment)
-     * Ini adalah security feature Laravel untuk mencegah field yang tidak diinginkan diisi
-     */
+    // Kolom yang dapat diisi secara massal
     protected $fillable = [
-        'nama',
-        'username',
-        'email',
-        'password',
-        'id_role',  // Tambahkan id_role ke fillable
+        'nama',      // Nama lengkap user
+        'username',  // Username untuk login
+        'email',     // Email user
+        'password',  // Password terenkripsi
+        'id_role',   // Role/peran user
     ];
 
     /**

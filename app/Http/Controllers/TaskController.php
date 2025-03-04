@@ -2,95 +2,160 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Task;
+use App\Http\Requests\TaskRequest;
 use Illuminate\Http\Request;
-use App\Models\Task; // Model Task
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 
+// Controller untuk mengelola operasi CRUD pada Task
 class TaskController extends Controller
 {
-    public function index()
+    // Menampilkan daftar tugas dengan filter dan pencarian
+    public function index(Request $request)
     {
-        // Mendapatkan user yang sedang login
-        $user = Auth::user();
-
-        // Menghitung jumlah tugas milik user
-        $tasksCount = Task::where('id_user', $user->id)->count();
-
-        // Mengembalikan view dashboard dengan data jumlah tugas
-        return view('user.dashboard', compact('tasksCount'));
-    }
-    public function getAllTask()
-    {
-        $user = Auth::user();
-        $tasks = Task::where('id_user', $user->id)->get();
-
-        return view('user.tasks', [
-            'tasks' => $tasks
-        ]);
-    }
-
-    public function getTaskById($id)
-    {
-        $task = Task::findOrFail($id);
-        $tasks = Task::where('id_user', Auth::id())->get();
-
-        return view('user.tasks', [
-            'tasks' => $tasks,
-            'editTask' => $task
-        ]);
-    }
-
-    public function insertTask(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'judul' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'deadline' => 'required|date',
-
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+        // Query dasar untuk tasks milik user yang login
+        $query = Task::where('id_user', auth()->id());
+        
+        // Menerapkan filter pencarian jika ada
+        if ($request->search) {
+            $query->where('judul', 'like', '%' . $request->search . '%');
         }
+        
+        // Menerapkan filter status jika ada
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+        
+        // Mengambil data tugas dan mengurutkannya
+        $tasks = $query->orderBy('created_at', 'desc')->get();
+        
+        // Menghitung jumlah tugas per status
+        $counters = [
+            'all' => $tasks->count(),
+            'tertunda' => $tasks->where('status', 'tertunda')->count(),
+            'selesai' => $tasks->where('status', 'selesai')->count()
+        ];
+        
+        return view('user.tasks', compact('tasks', 'counters'));
+    }
 
-        $task = new Task();
-        $task->id_user = Auth::id();
-        $task->fill($request->all());
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'judul' => 'required|max:255',
+            'deskripsi' => 'required',
+            'deadline' => 'required|date|after_or_equal:today',
+            'status' => 'required|in:tertunda,selesai'
+        ], [
+            'judul.required' => 'Judul tugas harus diisi',
+            'judul.max' => 'Judul tugas maksimal 255 karakter',
+            'deskripsi.required' => 'Deskripsi tugas harus diisi',
+            'deadline.required' => 'Tenggat waktu harus diisi',
+            'deadline.after_or_equal' => 'Tenggat waktu tidak boleh kurang dari hari ini',
+            'status.required' => 'Status harus dipilih',
+            'status.in' => 'Status tidak valid'
+        ]);
+
+        // Pastikan task dibuat dengan id_user yang sedang login
+        $validatedData['id_user'] = auth()->id();
+
+        Task::create($validatedData);
+
+        return redirect('/tasks')->with('success', 'Tugas baru berhasil ditambahkan!');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, $id)
+    {
+        // Pastikan task dimiliki oleh user yang sedang login
+        $task = Task::where('id_user', auth()->id())->findOrFail($id);
+        
+        // Validasi input
+        $validatedData = $request->validate([
+            'judul' => 'required|max:255',
+            'deskripsi' => 'required',
+            'deadline' => 'required|date',
+            'status' => 'required|in:tertunda,selesai'
+        ], [
+            'judul.required' => 'Judul tugas harus diisi',
+            'judul.max' => 'Judul tugas maksimal 255 karakter',
+            'deskripsi.required' => 'Deskripsi tugas harus diisi',
+            'deadline.required' => 'Tenggat waktu harus diisi',
+            'status.required' => 'Status harus dipilih',
+            'status.in' => 'Status tidak valid'
+        ]);
+
+        // Update task
+        $task->update($validatedData);
+
+        // Redirect dengan pesan sukses
+        return redirect()
+            ->route('tasks.index')
+            ->with('success', 'Tugas berhasil diperbarui!');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        try {
+            // Validasi kepemilikan task
+            $task = Task::where('id_user', auth()->id())
+                       ->where('id', $id)
+                       ->firstOrFail();
+
+            // Hapus task
+            $task->delete();
+
+            return redirect()
+                ->route('tasks.index')
+                ->with('success', 'Tugas berhasil dihapus!');
+
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('tasks.index')
+                ->with('error', 'Gagal menghapus tugas. Tugas tidak ditemukan atau Anda tidak memiliki akses.');
+        }
+    }
+
+    /**
+     * Toggle the status of the specified task.
+     */
+    public function toggleStatus($id)
+    {
+        $task = Task::where('id_user', auth()->id())->findOrFail($id);
+        $task->status = $task->status === 'selesai' ? 'tertunda' : 'selesai';
         $task->save();
-
-        return redirect()->route('tasks.index')
-            ->with('success', 'Task berhasil dibuat');
-    }
-
-    public function updateTask(Request $request, $id)
-    {
-        $validator = Validator::make($request->all(), [
-            'judul' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'deadline' => 'required|date',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $task = Task::findOrFail($id);
-        $task->update($request->all());
-
-        return redirect()->route('tasks.index')
-            ->with('success', 'Task berhasil diperbarui');
-    }
-    public function deleteTask($id)
-    {
-        $task = Task::findOrFail($id);
-        $task->delete();
-
-        return redirect()->route('tasks.index')
-            ->with('success', 'Task berhasil dihapus');
+        
+        return redirect()->back()->with('success', 'Status tugas berhasil diubah');
     }
 }
