@@ -26,12 +26,6 @@ Route::middleware('auth')->group(function () {
         Route::resource('users', KelolaUserController::class);
     });
     
-    // Admin routes
-    Route::prefix('admin')->group(function () {
-        Route::get('/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('admin.dashboard');
-    });
     
     // User routes - Tasks CRUD
     Route::prefix('tasks')->group(function () {
