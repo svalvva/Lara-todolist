@@ -6,11 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Role extends Model
 {
-    protected $fillable = ['name'];
+    protected $fillable = ['nama'];  // Change from 'name' to 'nama'
 
-    /**
-     * Relasi ke tabel users
-     */
     public function users()
     {
         return $this->hasMany(User::class, 'id_role');

@@ -50,17 +50,17 @@ class AuthController extends Controller
             'password.confirmed' => 'Konfirmasi password tidak cocok'
         ]);
 
-        // Cek apakah role admin sudah ada
-        $adminRole = Role::where('nama', 'admin')->first();
+        // Cek apakah role user sudah ada
+        $userRole = Role::where('nama', 'user')->first();
         
-        // Jika belum ada, buat role admin dan user
-        if (!$adminRole) {
-            $adminRole = Role::create(['nama' => 'admin']);
-            Role::create(['nama' => 'user']);
+        // Jika belum ada role sama sekali, buat role admin dan user
+        if (!$userRole) {
+            Role::create(['nama' => 'admin']);
+            $userRole = Role::create(['nama' => 'user']);
         }
 
-        // Set role admin untuk user baru
-        $validatedData['id_role'] = $adminRole->id;
+        // Set role user untuk user baru
+        $validatedData['id_role'] = $userRole->id;
         
         // Hash password sebelum disimpan ke database
         $validatedData['password'] = Hash::make($validatedData['password']);
@@ -109,15 +109,10 @@ class AuthController extends Controller
         if (Auth::attempt($authCredentials)) {
             $request->session()->regenerate();
             
-            // Dapatkan user yang sedang login
-            $user = Auth::user();
-            
-            // Redirect berdasarkan role
-            if ($user->role->nama === 'admin') {
-                return redirect()->intended('admin/dashboard')->with('success', 'Selamat datang Admin!');
-            } else {
-                return redirect()->intended('dashboard')->with('success', 'Login berhasil!');
-            }
+            // Redirect langsung berdasarkan role
+            return Auth::user()->role->nama === 'admin'
+                ? redirect()->route('admin.dashboard')->with('success', 'Selamat datang Admin!')
+                : redirect()->route('tasks.index')->with('success', 'Login berhasil!');
         }
 
         // Jika gagal, kembali ke halaman login dengan pesan error
