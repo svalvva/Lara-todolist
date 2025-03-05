@@ -29,22 +29,17 @@
             font-family: 'Inter', sans-serif;
             background-color: var(--purple-lightest);
             padding-top: 75px;
-    
         }
 
         .navbar {
-            background-color: rgba(107, 70, 193, 0.1);
+            background-color: rgba(107, 70, 193, 0.3);
             transition: background 0.3s ease;
             position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 40px);
-            max-width: 1200px;
-            border-radius: 16px;
+            top: 0;
+            left: 0;
+            width: 100%;
             box-shadow: 0 10px 25px rgba(107, 70, 193, 0.1);
             z-index: 1000;
-            padding: 10px 15px;
         }
 
         .navbar-brand {
@@ -171,8 +166,8 @@
 
         @media (max-width: 768px) {
             .navbar {
-                width: calc(100% - 20px);
-                top: 10px;
+                width: calc(100%);
+
             }
 
             .container {
